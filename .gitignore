@@ -205,3 +205,44 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ANN Project specific
+# Large datasets
+data/*.csv
+data/*.zip
+data/*.tar.gz
+data/*.json
+data/*.pkl
+data/*.h5
+
+# Trained models
+models/*.h5
+models/*.pkl
+models/*.joblib
+models/*.ckpt
+models/
+
+# Generated figures/plots
+figures/
+plots/
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.svg
+
+# Notebook outputs (keep code, ignore execution results)
+*.ipynb_checkpoints
+*/.ipynb_checkpoints/
+
+# TensorFlow/Keras cache
+.keras/
+logs/
+
+# IDE specific
+.vscode/
+.idea/
+
+# OS specific
+.DS_Store
+Thumbs.db
