@@ -60,7 +60,13 @@ def verify_installations():
         'pandas': 'Pandas', 
         'matplotlib': 'Matplotlib',
         'sklearn': 'Scikit-learn',
-        'tensorflow': 'TensorFlow'
+        'tensorflow': 'TensorFlow',
+        'cv2': 'OpenCV',
+        'PIL': 'Pillow',
+        'pytesseract': 'PyTesseract',
+        'easyocr': 'EasyOCR',
+        'Levenshtein': 'Python-Levenshtein',
+        'nltk': 'NLTK'
     }
     
     all_good = True
@@ -81,6 +87,25 @@ def verify_installations():
             print(f"✓ TensorFlow GPU support detected: {len(gpus)} GPU(s)")
         else:
             print("ℹ TensorFlow CPU version (GPU not detected)")
+    except:
+        pass
+    
+    # Verify OpenCV functionality
+    try:
+        import cv2
+        print(f"✓ OpenCV version: {cv2.__version__}")
+    except:
+        print("ℹ Could not check OpenCV version")
+    
+    # Check Tesseract installation
+    try:
+        import pytesseract
+        # Try to get tesseract version
+        try:
+            version = pytesseract.get_tesseract_version()
+            print(f"✓ Tesseract version: {version}")
+        except:
+            print("ℹ Tesseract executable may not be installed (install tesseract-ocr)")
     except:
         pass
     
@@ -186,11 +211,60 @@ def run_basic_tests():
         assert X.shape == (100, 4)
         print("✓ Scikit-learn test passed")
         
+        # Test OpenCV
+        import cv2
+        test_img = np.zeros((100, 100, 3), dtype=np.uint8)
+        gray = cv2.cvtColor(test_img, cv2.COLOR_BGR2GRAY)
+        assert gray.shape == (100, 100)
+        print("✓ OpenCV test passed")
+        
+        # Test PIL/Pillow
+        from PIL import Image
+        img = Image.new('RGB', (100, 100), color='red')
+        assert img.size == (100, 100)
+        print("✓ Pillow test passed")
+        
+        # Test text processing
+        from difflib import SequenceMatcher
+        similarity = SequenceMatcher(None, "hello", "hello").ratio()
+        assert similarity == 1.0
+        print("✓ Text similarity test passed")
+        
+        # Test Levenshtein if available
+        try:
+            import Levenshtein
+            distance = Levenshtein.distance("hello", "hallo")
+            assert distance == 1
+            print("✓ Levenshtein test passed")
+        except ImportError:
+            print("ℹ Levenshtein not available - will use difflib")
+        
         return True
         
     except Exception as e:
         print(f"✗ Test failed: {str(e)}")
         return False
+
+def setup_ocr_testing():
+    """Setup OCR testing utilities"""
+    print("\nSetting up OCR testing utilities...")
+    
+    # Create src directory if it doesn't exist
+    Path("src").mkdir(exist_ok=True)
+    
+    # Initialize NLTK data if NLTK is available
+    try:
+        import nltk
+        print("ℹ Downloading NLTK data (may take a few moments)...")
+        nltk.download('punkt', quiet=True)
+        nltk.download('stopwords', quiet=True)
+        print("✓ NLTK data downloaded")
+    except ImportError:
+        print("ℹ NLTK not available - skipping NLTK setup")
+    except Exception as e:
+        print(f"ℹ NLTK setup warning: {e}")
+    
+    print("✓ OCR testing utilities ready")
 
 def print_next_steps():
     """Print instructions for next steps"""
@@ -200,19 +274,30 @@ def print_next_steps():
     print("\n1. Start Jupyter Notebook:")
     print("   jupyter notebook")
     print("\n2. Open notebooks in order:")
-    print("   - notebooks/task1_fraud.ipynb")
-    print("   - notebooks/task2_ocr_mnist.ipynb") 
+    print("   - notebooks/task1_fraud_enhanced.ipynb")
+    print("   - notebooks/task2_ocr_mnist_enhanced.ipynb")
+    print("   - notebooks/complete_bank_ocr_system.ipynb")
+    print("   - notebooks/task3_timeseries.ipynb")
     print("   - notebooks/advanced_experiments.ipynb")
-    print("\n3. For fraud detection:")
+    print("\n3. For OCR testing:")
+    print("   - Use: from src.ocr_testing_utils import *")
+    print("   - Test images available in data/sample_document_*.jpg")
+    print("   - Ground truth in data/sample_documents.json")
+    print("\n4. For fraud detection:")
     print("   - Download dataset from Kaggle if not already done")
     print("   - Place creditcard.csv in data/ directory")
-    print("\n4. Run all cells and save results/screenshots")
-    print("\n5. Check the comprehensive report:")
-    print("   - ANN_Project_Report.md")
-    print("\n6. Project structure:")
+    print("\n5. OCR Model Testing:")
+    print("   - Complete step-by-step testing methodology")
+    print("   - Visual verification and error analysis")
+    print("   - Comprehensive accuracy reporting")
+    print("\n6. Run all cells and save results/screenshots")
+    print("\n7. Check the comprehensive report:")
+    print("   - docs/comprehensive_report.md")
+    print("\n8. Project structure:")
     print("   - Code: In notebooks/")
-    print("   - Report: ANN_Project_Report.md")
-    print("   - Proposal: project_proposal.md")
+    print("   - OCR Utils: src/ocr_testing_utils.py")
+    print("   - Report: docs/comprehensive_report.md")
+    print("   - Data: data/ (datasets and sample documents)")
     print("\n" + "="*60)
 
 def main():
@@ -247,13 +332,19 @@ def main():
     except Exception as e:
         print(f"Warning: Could not create Jupyter config: {e}")
     
-    # Step 7: Run tests
+    # Step 7: Setup OCR testing
+    try:
+        setup_ocr_testing()
+    except Exception as e:
+        print(f"Warning: Could not setup OCR testing: {e}")
+    
+    # Step 8: Run tests
     if run_basic_tests():
         print("\n✓ All systems ready!")
     else:
         print("\n✗ Some tests failed - check your installation")
     
-    # Step 8: Print next steps
+    # Step 9: Print next steps
     print_next_steps()
 
 if __name__ == "__main__":
