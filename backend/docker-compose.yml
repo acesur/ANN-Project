@@ -1,0 +1,164 @@
+version: '3.8'
+
+services:
+  # Main application
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=false
+      - DATABASE_URL=postgresql://bankocr:bankocr123@postgres:5432/bankocr_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./processed:/app/processed
+      - ./models:/app/models
+      - ./logs:/app/logs
+    networks:
+      - bankocr-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=bankocr_db
+      - POSTGRES_USER=bankocr
+      - POSTGRES_PASSWORD=bankocr123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - bankocr-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bankocr -d bankocr_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:6-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - bankocr-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - static_files:/var/www/static:ro
+    depends_on:
+      - app
+    networks:
+      - bankocr-network
+    restart: unless-stopped
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    networks:
+      - bankocr-network
+    restart: unless-stopped
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - bankocr-network
+    restart: unless-stopped
+
+  # Celery worker for background tasks
+  celery-worker:
+    build: .
+    command: celery -A celery_app worker --loglevel=info
+    environment:
+      - DEBUG=false
+      - DATABASE_URL=postgresql://bankocr:bankocr123@postgres:5432/bankocr_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./processed:/app/processed
+      - ./models:/app/models
+      - ./logs:/app/logs
+    networks:
+      - bankocr-network
+    restart: unless-stopped
+
+  # Celery beat for scheduled tasks
+  celery-beat:
+    build: .
+    command: celery -A celery_app beat --loglevel=info
+    environment:
+      - DEBUG=false
+      - DATABASE_URL=postgresql://bankocr:bankocr123@postgres:5432/bankocr_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - bankocr-network
+    restart: unless-stopped
+
+# Named volumes
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  static_files:
+
+# Networks
+networks:
+  bankocr-network:
+    driver: bridge

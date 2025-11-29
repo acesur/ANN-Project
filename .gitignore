@@ -224,12 +224,12 @@ data/*.feather
 # Exclude the entire data directory to prevent large file issues
 data/
 
-# Trained models
+# Trained models (but keep model directories)
 models/*.h5
 models/*.pkl
 models/*.joblib
 models/*.ckpt
-models/
+!models/.gitkeep
 
 # Generated figures/plots
 figures/
@@ -246,7 +246,20 @@ plots/
 
 # TensorFlow/Keras cache
 .keras/
-logs/
+
+# Backend specific
+backend/uploads/
+backend/processed/
+backend/logs/
+backend/static/
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+backend/bankocr_local.db*
+
+# Environment files (but keep .env.example)
+.env
+!.env.example
 
 # IDE specific
 .vscode/
