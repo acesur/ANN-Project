@@ -19,10 +19,16 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 
 # Database URL conversion for async
 if settings.DATABASE_URL.startswith("sqlite"):
-    ASYNC_DATABASE_URL = settings.DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://")
+    if "aiosqlite" not in settings.DATABASE_URL:
+        ASYNC_DATABASE_URL = settings.DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://")
+    else:
+        ASYNC_DATABASE_URL = settings.DATABASE_URL
 else:
     # For PostgreSQL
-    ASYNC_DATABASE_URL = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+    if "asyncpg" not in settings.DATABASE_URL:
+        ASYNC_DATABASE_URL = settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+    else:
+        ASYNC_DATABASE_URL = settings.DATABASE_URL
 
 # Create async engine
 async_engine = create_async_engine(
@@ -96,7 +102,7 @@ class Document(Base):
     processing_time = Column(Float, nullable=True)
     
     # Metadata
-    metadata = Column(JSON, nullable=True)
+    document_metadata = Column(JSON, nullable=True)
     error_message = Column(Text, nullable=True)
     retry_count = Column(Integer, default=0)
     
@@ -125,7 +131,7 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     type = Column(String, default="info")  # info, success, warning, error
     is_read = Column(Boolean, default=False)
-    metadata = Column(JSON, nullable=True)
+    notification_metadata = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     read_at = Column(DateTime, nullable=True)
     

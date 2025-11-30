@@ -256,10 +256,25 @@ backend/*.db
 backend/*.sqlite
 backend/*.sqlite3
 backend/bankocr_local.db*
+backend/bank_ocr.db
+backend/.env.production
+backend/.env.local
 
 # Environment files (but keep .env.example)
 .env
+.env.production
 !.env.example
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+bank_ocr.db
+
+# Deployment files (optional - uncomment if you don't want to track)
+# backend/deploy*.sh
+# backend/setup*.sh
+# backend/configure*.sh
 
 # IDE specific
 .vscode/

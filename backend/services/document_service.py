@@ -363,7 +363,7 @@ class DocumentService:
             title=title,
             message=message,
             type=notification_type,
-            metadata={
+            notification_metadata={
                 "document_id": document.id,
                 "document_filename": document.original_filename,
                 "processing_time": document.processing_time

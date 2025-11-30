@@ -4,7 +4,7 @@ Pydantic Schemas
 Data models for API requests and responses
 """
 
-from pydantic import BaseModel, EmailStr, validator, Field
+from pydantic import BaseModel, EmailStr, field_validator, Field
 from typing import Optional, Dict, List, Any
 from datetime import datetime
 from enum import Enum
@@ -34,9 +34,9 @@ class UserRegister(BaseModel):
     password: str = Field(..., min_length=8)
     first_name: str = Field(..., min_length=1, max_length=50)
     last_name: str = Field(..., min_length=1, max_length=50)
-    phone: Optional[str] = Field(None, regex=r'^[\+]?[1-9][\d]{0,15}$')
+    phone: Optional[str] = Field(None, pattern=r'^[\+]?[1-9][\d]{0,15}$')
     
-    @validator('password')
+    @field_validator('password')
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
