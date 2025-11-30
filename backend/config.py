@@ -67,11 +67,11 @@ class Settings(BaseSettings):
     SMTP_FROM_EMAIL: str = "noreply@bankocr.com"
     
     # Model paths
-    MODEL_BASE_PATH: str = "models"
-    CHARACTER_MODEL_PATH: str = "models/complete_ocr_character_model.h5"
-    SEQUENCE_MODEL_PATH: str = "models/complete_ocr_sequence_model.h5"
-    DETECTION_MODEL_PATH: str = "models/complete_ocr_detection_model.h5"
-    METADATA_PATH: str = "models/complete_ocr_system_metadata.json"
+    MODEL_BASE_PATH: str = "ml_models"
+    CHARACTER_MODEL_PATH: str = "ml_models/complete_ocr_character_model.h5"
+    SEQUENCE_MODEL_PATH: str = "ml_models/complete_ocr_sequence_model.h5"
+    DETECTION_MODEL_PATH: str = "ml_models/complete_ocr_detection_model.h5"
+    METADATA_PATH: str = "ml_models/complete_ocr_system_metadata.json"
     
     # Monitoring
     ENABLE_METRICS: bool = True

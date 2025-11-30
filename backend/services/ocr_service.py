@@ -19,7 +19,7 @@ from datetime import datetime
 
 # Import the original OCR system
 import sys
-sys.path.append(str(Path(__file__).parent.parent.parent))
+sys.path.append(str(Path(__file__).parent.parent))
 from bank_ocr_api import OCRSystem
 
 from config import settings
